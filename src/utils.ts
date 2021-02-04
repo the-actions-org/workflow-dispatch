@@ -43,6 +43,8 @@ export function getArgs() {
   const waitForCompletion = waitForCompletionStr && waitForCompletionStr === 'true';
   const waitForCompletionTimeout = toMilliseconds(core.getInput('wait-for-completion-timeout'));
   const checkStatusInterval = toMilliseconds(core.getInput('wait-for-completion-interval'));
+  const repostLogsStr = core.getInput('repost-logs');
+  const repostLogs = repostLogsStr && repostLogsStr === 'true';
 
   return {
     token,
@@ -56,7 +58,8 @@ export function getArgs() {
     displayWorkflowUrlInterval,
     checkStatusInterval,
     waitForCompletion,
-    waitForCompletionTimeout
+    waitForCompletionTimeout,
+    repostLogs
   };
 }
 

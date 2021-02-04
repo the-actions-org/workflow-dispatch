@@ -9,3 +9,9 @@ jobs:
     steps:
       - name: Sleep
         run: sleep 10s
+  
+  additional_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: echo "Extra job completed!"

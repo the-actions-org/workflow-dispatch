@@ -44,13 +44,7 @@ async function waitForCompletionOrTimeout(workflowHandler: WorkflowHandler, chec
   return { result, start }
 }
 
-function computeConclusion(start: number, waitForCompletionTimeout: number, result?: WorkflowRunResult) {
-  if (isTimedOut(start, waitForCompletionTimeout)) {
-    core.info(`Workflow wait timed out`);
-    core.setOutput('workflow-conclusion', WorkflowRunConclusion.TIMED_OUT);
-    throw new Error('Workflow run has failed due to timeout');
-  }
-
+function computeConclusion(result?: WorkflowRunResult) {
   core.info(`Workflow completed with conclusion=${result?.conclusion}`);
   const conclusion = result?.conclusion;
   core.setOutput('workflow-conclusion', conclusion);
@@ -58,6 +52,14 @@ function computeConclusion(start: number, waitForCompletionTimeout: number, resu
   if (conclusion === WorkflowRunConclusion.FAILURE)   throw new Error('Workflow run has failed');
   if (conclusion === WorkflowRunConclusion.CANCELLED) throw new Error('Workflow run was cancelled');
   if (conclusion === WorkflowRunConclusion.TIMED_OUT) throw new Error('Workflow run has failed due to timeout');
+}
+
+function checkForTimeout(start: number, waitForCompletionTimeout: number) {
+  if (isTimedOut(start, waitForCompletionTimeout)) {
+    core.info(`Workflow wait timed out`);
+    core.setOutput('workflow-conclusion', WorkflowRunConclusion.TIMED_OUT);
+    throw new Error('Workflow run has failed due to timeout');
+  }
 }
 
 //
@@ -84,9 +86,16 @@ async function run(): Promise<void> {
 
     core.info(`Waiting for workflow completion`);
     const { result, start } = await waitForCompletionOrTimeout(workflowHandler, args.checkStatusInterval, args.waitForCompletionTimeout);
-
     core.setOutput('workflow-url', result?.url);
-    computeConclusion(start, args.waitForCompletionTimeout, result);
+    checkForTimeout(start, args.waitForCompletionTimeout);
+
+    if (args.repostLogs) {
+      const logs = await workflowHandler.getWorkflowLogs();
+      core.info("Remote workflow logs:");
+      core.info(logs);
+    }
+
+    computeConclusion(result);
 
   } catch (error) {
     core.setFailed(error.message);

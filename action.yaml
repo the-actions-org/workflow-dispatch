@@ -41,6 +41,10 @@ inputs:
     description: 'Time to wait (+unit) between two polls to get run status'
     required: false
     default: 1m
+  repost-logs:
+    description: 'Whether to post the logs of the triggered run back into the original job'
+    required: false
+    default: false
 
 runs:
   using: 'node12'

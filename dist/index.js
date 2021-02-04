@@ -5887,12 +5887,7 @@ function waitForCompletionOrTimeout(workflowHandler, checkStatusInterval, waitFo
         return { result, start };
     });
 }
-function computeConclusion(start, waitForCompletionTimeout, result) {
-    if (utils_1.isTimedOut(start, waitForCompletionTimeout)) {
-        core.info(`Workflow wait timed out`);
-        core.setOutput('workflow-conclusion', workflow_handler_1.WorkflowRunConclusion.TIMED_OUT);
-        throw new Error('Workflow run has failed due to timeout');
-    }
+function computeConclusion(result) {
     core.info(`Workflow completed with conclusion=${result === null || result === void 0 ? void 0 : result.conclusion}`);
     const conclusion = result === null || result === void 0 ? void 0 : result.conclusion;
     core.setOutput('workflow-conclusion', conclusion);
@@ -5902,6 +5897,13 @@ function computeConclusion(start, waitForCompletionTimeout, result) {
         throw new Error('Workflow run was cancelled');
     if (conclusion === workflow_handler_1.WorkflowRunConclusion.TIMED_OUT)
         throw new Error('Workflow run has failed due to timeout');
+}
+function checkForTimeout(start, waitForCompletionTimeout) {
+    if (utils_1.isTimedOut(start, waitForCompletionTimeout)) {
+        core.info(`Workflow wait timed out`);
+        core.setOutput('workflow-conclusion', workflow_handler_1.WorkflowRunConclusion.TIMED_OUT);
+        throw new Error('Workflow run has failed due to timeout');
+    }
 }
 //
 // Main task function (async wrapper)
@@ -5925,7 +5927,13 @@ function run() {
             core.info(`Waiting for workflow completion`);
             const { result, start } = yield waitForCompletionOrTimeout(workflowHandler, args.checkStatusInterval, args.waitForCompletionTimeout);
             core.setOutput('workflow-url', result === null || result === void 0 ? void 0 : result.url);
-            computeConclusion(start, args.waitForCompletionTimeout, result);
+            checkForTimeout(start, args.waitForCompletionTimeout);
+            if (args.repostLogs) {
+                const logs = yield workflowHandler.getWorkflowLogs();
+                core.info("Remote workflow logs:");
+                core.info(logs);
+            }
+            computeConclusion(result);
         }
         catch (error) {
             core.setFailed(error.message);
@@ -6006,6 +6014,8 @@ function getArgs() {
     const waitForCompletion = waitForCompletionStr && waitForCompletionStr === 'true';
     const waitForCompletionTimeout = toMilliseconds(core.getInput('wait-for-completion-timeout'));
     const checkStatusInterval = toMilliseconds(core.getInput('wait-for-completion-interval'));
+    const repostLogsStr = core.getInput('repost-logs');
+    const repostLogs = repostLogsStr && repostLogsStr === 'true';
     return {
         token,
         workflowRef,
@@ -6018,7 +6028,8 @@ function getArgs() {
         displayWorkflowUrlInterval,
         checkStatusInterval,
         waitForCompletion,
-        waitForCompletionTimeout
+        waitForCompletionTimeout,
+        repostLogs
     };
 }
 exports.getArgs = getArgs;
@@ -6172,6 +6183,34 @@ class WorkflowHandler {
                 debug_1.debug('Workflow Run status error', error);
                 throw error;
             }
+        });
+    }
+    getWorkflowLogs() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const runId = yield this.getWorkflowRunId();
+            const response = yield this.octokit.actions.listJobsForWorkflowRun({
+                owner: this.owner,
+                repo: this.repo,
+                run_id: runId
+            });
+            debug_1.debug('Jobs in workflow', response);
+            var buf = "";
+            for (const job of response.data.jobs) {
+                try {
+                    const jobLog = yield this.octokit.actions.downloadJobLogsForWorkflowRun({
+                        owner: this.owner,
+                        repo: this.repo,
+                        job_id: job.id,
+                    });
+                    debug_1.debug(`Job ${job.id} log`, jobLog);
+                    buf += `Logs of job '${job.name}'\n`;
+                    buf += jobLog.data;
+                }
+                catch (error) {
+                    throw new Error(`Failed to fetch job logs for job '${job.name}' (id ${job.id}): ${error}`);
+                }
+            }
+            return buf;
         });
     }
     getWorkflowRunArtifacts() {

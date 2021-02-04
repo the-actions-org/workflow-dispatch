@@ -92,6 +92,7 @@ jobs:
         token: ${{ secrets.PERSONAL_TOKEN }}
         wait-for-completion-interval: 10s
         wait-for-completion-timeout: 5m
+        repost-logs: true
       continue-on-error: true
     - uses: nick-invision/assert-action@v1
       with:
@@ -122,6 +123,7 @@ jobs:
         token: ${{ secrets.PERSONAL_TOKEN }}
         wait-for-completion-interval: 10s
         wait-for-completion-timeout: 5m
+        repost-logs: true
       continue-on-error: true
     - run: echo "worflow-conclusion=${{ steps.failing-workflow.outputs.workflow-conclusion }}"
     - uses: nick-invision/assert-action@v1
@@ -153,6 +155,7 @@ jobs:
         token: ${{ secrets.PERSONAL_TOKEN }}
         wait-for-completion-interval: 10s
         wait-for-completion-timeout: 30s
+        repost-logs: true
       continue-on-error: true
     - uses: nick-invision/assert-action@v1
       with:
@@ -186,4 +189,3 @@ jobs:
       uses: mikeal/publish-to-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

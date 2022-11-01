@@ -66,7 +66,7 @@ function computeConclusion(start: number, waitForCompletionTimeout: number, resu
 async function run(): Promise<void> {
   try {
     const args = getArgs();
-    const workflowHandler = new WorkflowHandler(args.token, args.workflowRef, args.owner, args.repo, args.ref);
+    const workflowHandler = new WorkflowHandler(args.token, args.workflowRef, args.owner, args.repo, args.ref, args.checkName);
 
     // Trigger workflow run
     await workflowHandler.triggerWorkflow(args.inputs);

@@ -51,7 +51,8 @@ export class WorkflowHandler {
               private workflowRef: string,
               private owner: string,
               private repo: string,
-              private ref: string) {
+              private ref: string,
+              private checkName: string) {
     // Get octokit client for making API calls
     this.octokit = github.getOctokit(token)
   }
@@ -134,22 +135,36 @@ export class WorkflowHandler {
       });
       debug('List Workflow Runs', response);
 
-      const runs = response.data.workflow_runs
-        .filter((r: any) => new Date(r.created_at).setMilliseconds(0) >= this.triggerDate);
-      debug(`Filtered Workflow Runs (after trigger date: ${new Date(this.triggerDate).toISOString()})`, runs.map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        created_at: r.creatd_at,
-        triggerDate: new Date(this.triggerDate).toISOString(),
-        created_at_ts: new Date(r.created_at).valueOf(),
-        triggerDateTs: this.triggerDate
-      })));
-  
-      if (runs.length == 0) {
+      const result = await this.octokit.rest.checks.listForRef({
+        check_name: this.checkName,
+        owner: this.owner,
+        repo: this.repo,
+        ref: this.ref,
+        filter: 'latest'
+      })
+
+      if (result.length == 0) {
         throw new Error('Run not found');
       }
 
-      this.workflowRunId = runs[0].id as number;
+      this.workflowRunId = result.check_runs[0].id as number;
+
+      // const runs = response.data.workflow_runs
+      //   .filter((r: any) => new Date(r.created_at).setMilliseconds(0) >= this.triggerDate);
+      // debug(`Filtered Workflow Runs (after trigger date: ${new Date(this.triggerDate).toISOString()})`, runs.map((r: any) => ({
+      //   id: r.id,
+      //   name: r.name,
+      //   created_at: r.creatd_at,
+      //   triggerDate: new Date(this.triggerDate).toISOString(),
+      //   created_at_ts: new Date(r.created_at).valueOf(),
+      //   triggerDateTs: this.triggerDate
+      // })));
+      //
+      // if (runs.length == 0) {
+      //   throw new Error('Run not found');
+      // }
+      //
+      // this.workflowRunId = runs[0].id as number;
       return this.workflowRunId;
     } catch (error) {
       debug('Get workflow run id error', error);

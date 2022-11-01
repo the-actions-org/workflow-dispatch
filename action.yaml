@@ -17,6 +17,9 @@ inputs:
   repo:
     description: 'Repo owner & name, slash separated, only set if invoking a workflow in a different repo'
     required: false
+  run-name:
+    description: 'If specified will select the run ID based on the run name'
+    required: false
   display-workflow-run-url:
     description: 'Get the URL of the triggered workflow and display it in logs (useful to follow the progress of the triggered workflow)'
     required: false

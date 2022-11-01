@@ -43,7 +43,7 @@ export function getArgs() {
   const waitForCompletion = waitForCompletionStr && waitForCompletionStr === 'true';
   const waitForCompletionTimeout = toMilliseconds(core.getInput('wait-for-completion-timeout'));
   const checkStatusInterval = toMilliseconds(core.getInput('wait-for-completion-interval'));
-  const checkName = core.getInput('checkName')
+  const runName = core.getInput('run-name')
 
   return {
     token,
@@ -58,7 +58,7 @@ export function getArgs() {
     checkStatusInterval,
     waitForCompletion,
     waitForCompletionTimeout,
-    checkName
+    runName
   };
 }
 

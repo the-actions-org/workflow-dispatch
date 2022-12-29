@@ -59,7 +59,7 @@ export class WorkflowHandler {
   async triggerWorkflow(inputs: any) {
     try {
       const workflowId = await this.getWorkflowId();
-      this.triggerDate = new Date(Date.now()).setMilliseconds(0);
+      this.triggerDate = new Date().setMilliseconds(0);
       const dispatchResp = await this.octokit.actions.createWorkflowDispatch({
         owner: this.owner,
         repo: this.repo,

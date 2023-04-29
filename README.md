@@ -11,7 +11,7 @@ For details of the `workflow_dispatch` even see [this blog post introducing this
 
 *Note 2.* If you want to reference the target workflow by ID, you will need to list them with the following REST API call `curl https://api.github.com/repos/{{owner}}/{{repo}}/actions/workflows -H "Authorization: token {{pat-token}}"`
 
-_This action is a fork of `benc-uk/workflow-dispatch` to add support for waiting for workflow completion._
+_This action is a fork of `aurelien-baudet/workflow-dispatch` to add support for bypassing the workflow dispatch on a flag._
 
 ## Inputs
 ### `workflow`
@@ -22,6 +22,9 @@ _This action is a fork of `benc-uk/workflow-dispatch` to add support for waiting
 **Required.** A GitHub access token (PAT) with write access to the repo in question. **NOTE.** The automatically provided token e.g. `${{ secrets.GITHUB_TOKEN }}` can not be used, GitHub prevents this token from being able to fire the  `workflow_dispatch` and `repository_dispatch` event. [The reasons are explained in the docs](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#triggering-new-workflows-using-a-personal-access-token).  
 
 The solution is to manually create a PAT and store it as a secret e.g. `${{ secrets.PERSONAL_TOKEN }}`
+
+### `bypass`
+***Optional.*** If `true`, this action will do nothing and return immediately.
 
 ### `inputs`
 **Optional.** The inputs to pass to the workflow (if any are configured), this must be a JSON encoded string, e.g. `{ "myInput": "foobar" }`.

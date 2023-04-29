@@ -5910,6 +5910,9 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const args = utils_1.getArgs();
+            if (args.bypass) {
+                return;
+            }
             const workflowHandler = new workflow_handler_1.WorkflowHandler(args.token, args.workflowRef, args.owner, args.repo, args.ref);
             // Trigger workflow run
             yield workflowHandler.triggerWorkflow(args.inputs);
@@ -6006,6 +6009,8 @@ function getArgs() {
     const waitForCompletion = waitForCompletionStr && waitForCompletionStr === 'true';
     const waitForCompletionTimeout = toMilliseconds(core.getInput('wait-for-completion-timeout'));
     const checkStatusInterval = toMilliseconds(core.getInput('wait-for-completion-interval'));
+    const bypassStr = core.getInput('bypass');
+    const bypass = bypassStr && bypassStr === 'true';
     return {
         token,
         workflowRef,
@@ -6013,6 +6018,7 @@ function getArgs() {
         owner,
         repo,
         inputs,
+        bypass,
         displayWorkflowUrl,
         displayWorkflowUrlTimeout,
         displayWorkflowUrlInterval,

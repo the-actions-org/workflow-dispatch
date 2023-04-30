@@ -24,7 +24,7 @@ _This action is a fork of `aurelien-baudet/workflow-dispatch` to add support for
 The solution is to manually create a PAT and store it as a secret e.g. `${{ secrets.PERSONAL_TOKEN }}`
 
 ### `bypass`
-***Optional.*** If `true`, this action will do nothing and return immediately.
+***Optional.*** If `true`, this action will do nothing and return immediately. Default is `true`.
 
 ### `inputs`
 **Optional.** The inputs to pass to the workflow (if any are configured), this must be a JSON encoded string, e.g. `{ "myInput": "foobar" }`.

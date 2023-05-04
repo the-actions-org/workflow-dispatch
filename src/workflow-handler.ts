@@ -168,7 +168,7 @@ export class WorkflowHandler {
       return this.workflowId
     }
     try {
-      const workflowsResp = await this.octokit.actions.listRepoWorkflows({
+      const workflowsResp = await this.octokit.rest.actions.listRepoWorkflows({
         owner: this.owner,
         repo: this.repo
       })

@@ -163,6 +163,38 @@ jobs:
         expected: failure
         actual: ${{ steps.timeout-workflow.outcome }}
 
+  print-workflow-logs-test:
+    needs: [build]
+    runs-on: ubuntu-latest
+    name: "print-workflow-logs-test [trigger+wait|by workflow filename|print logs|shoud report timed_out]"
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+    - name: Download dist
+      uses: actions/download-artifact@v3
+      with:
+        name: build
+        path: dist
+    - name: Invoke 'retrieve-logs' workflow and wait for result using this action
+      id: print-workflow-logs
+      uses: ./
+      with:
+        workflow: retrieve-logs.yml
+        token: ${{ secrets.PERSONAL_TOKEN }}
+        wait-for-completion-interval: 10s
+        wait-for-completion-timeout: 120s
+        workflow-logs: print
+      continue-on-error: true
+    - uses: nick-invision/assert-action@v1
+      with:
+        expected: timed_out
+        actual: ${{ steps.print-workflow-logs.outputs.workflow-conclusion }}
+    - uses: nick-invision/assert-action@v1
+      with:
+        expected: failure
+        actual: ${{ steps.print-workflow-logs.outcome }}
+      # TODO: add assertions on logs
+
     # - name: Invoke external workflow using this action
     #   uses: ./
     #   with:
@@ -172,7 +204,13 @@ jobs:
     #     ref: master 
 
   deploy:
-    needs: [echo-1-test, echo-2-test, long-running-test, failing-test, timeout-test]
+    needs:
+      - echo-1-test
+      - echo-2-test
+      - long-running-test
+      - failing-test
+      - timeout-test
+      - print-workflow-logs-test
     runs-on: ubuntu-latest
     steps:
     - name: Check out repository

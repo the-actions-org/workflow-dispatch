@@ -41,6 +41,7 @@ export interface WorkflowRunResult {
   conclusion: WorkflowRunConclusion
 }
 
+
 export class WorkflowHandler {
   private octokit: any;
   private workflowId?: number | string;
@@ -54,14 +55,14 @@ export class WorkflowHandler {
               private ref: string,
               private runName: string) {
     // Get octokit client for making API calls
-    this.octokit = github.getOctokit(token)
+    this.octokit = github.getOctokit(token);
   }
 
   async triggerWorkflow(inputs: any) {
     try {
       const workflowId = await this.getWorkflowId();
       this.triggerDate = new Date().setMilliseconds(0);
-      const dispatchResp = await this.octokit.actions.createWorkflowDispatch({
+      const dispatchResp = await this.octokit.rest.actions.createWorkflowDispatch({
         owner: this.owner,
         repo: this.repo,
         workflow_id: workflowId,
@@ -69,7 +70,7 @@ export class WorkflowHandler {
         inputs
       });
       debug('Workflow Dispatch', dispatchResp);
-    } catch (error) {
+    } catch (error: any) {
       debug('Workflow Dispatch error', error.message);
       throw error;
     }
@@ -78,7 +79,7 @@ export class WorkflowHandler {
   async getWorkflowRunStatus(): Promise<WorkflowRunResult> {
     try {
       const runId = await this.getWorkflowRunId();
-      const response = await this.octokit.actions.getWorkflowRun({
+      const response = await this.octokit.rest.actions.getWorkflowRun({
         owner: this.owner,
         repo: this.repo,
         run_id: runId
@@ -91,7 +92,7 @@ export class WorkflowHandler {
         conclusion: ofConclusion(response.data.conclusion)
       };
 
-    } catch (error) {
+    } catch (error: any) {
       debug('Workflow Run status error', error);
       throw error;
     }
@@ -101,7 +102,7 @@ export class WorkflowHandler {
   async getWorkflowRunArtifacts(): Promise<WorkflowRunResult> {
     try {
       const runId = await this.getWorkflowRunId();
-      const response = await this.octokit.actions.getWorkflowRunArtifacts({
+      const response = await this.octokit.rest.actions.getWorkflowRunArtifacts({
         owner: this.owner,
         repo: this.repo,
         run_id: runId
@@ -120,7 +121,8 @@ export class WorkflowHandler {
     }
   }
 
-  private async getWorkflowRunId(): Promise<number> {
+
+  async getWorkflowRunId(): Promise<number> {
     if (this.workflowRunId) {
       return this.workflowRunId;
     }
@@ -143,7 +145,7 @@ export class WorkflowHandler {
   private async findWorkflowRunIdFromFirstRunOfSameWorkflowId(): Promise<number> {
     const workflowId = await this.getWorkflowId();
 
-    const response = await this.octokit.actions.listWorkflowRuns({
+    const response = await this.octokit.rest.actions.listWorkflowRuns({
       owner: this.owner,
       repo: this.repo,
       workflow_id: workflowId,
@@ -195,7 +197,7 @@ export class WorkflowHandler {
       return this.workflowId;
     }
     try {
-      const workflowsResp = await this.octokit.actions.listRepoWorkflows({
+      const workflowsResp = await this.octokit.rest.actions.listRepoWorkflows({
         owner: this.owner, 
         repo: this.repo
       });
@@ -217,4 +219,6 @@ export class WorkflowHandler {
   private isFilename(workflowRef: string) {
     return /.+\.ya?ml$/.test(workflowRef);
   }
+
 }
+

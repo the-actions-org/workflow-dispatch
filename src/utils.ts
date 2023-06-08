@@ -49,7 +49,8 @@ export function getArgs() {
   const waitForCompletion = waitForCompletionStr && waitForCompletionStr === 'true';
   const waitForCompletionTimeout = toMilliseconds(core.getInput('wait-for-completion-timeout'));
   const checkStatusInterval = toMilliseconds(core.getInput('wait-for-completion-interval'));
-  const runName = core.getInput('run-name')
+  const runName = core.getInput('run-name');
+  const workflowLogMode = core.getInput('workflow-logs');
 
   return {
     token,
@@ -64,7 +65,8 @@ export function getArgs() {
     checkStatusInterval,
     waitForCompletion,
     waitForCompletionTimeout,
-    runName
+    runName,
+    workflowLogMode
   };
 }
 

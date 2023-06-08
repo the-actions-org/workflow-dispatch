@@ -34,7 +34,7 @@ All values must be strings (even if they are used as booleans or numbers in the 
 ### `repo`
 **Optional.** The default behavior is to trigger workflows in the same repo as the triggering workflow, if you wish to trigger in another GitHub repo "externally", then provide the owner + repo name with slash between them e.g. `microsoft/vscode`
 
-### `run-name`
+### `run-name` (since 3.0.0)
 **Optional.** The default behavior is to get the remote run ID based on the latest workflow name and date, if you have multiple of the same workflow running at the same time it can point to an incorrect run id.
 You can specify the run name to fetch the run ID based on the actual run name.
 

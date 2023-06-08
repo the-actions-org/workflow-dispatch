@@ -127,48 +127,9 @@ export class WorkflowHandler {
     try {
       core.debug('Get workflow run id');
       if (this.runName) {
-
-        const result = await this.octokit.rest.checks.listForRef({
-          check_name: this.runName,
-          owner: this.owner,
-          repo: this.repo,
-          ref: this.ref,
-          filter: 'latest'
-        })
-
-        if (result.length == 0) {
-          throw new Error('Run not found');
-        }
-
-        this.workflowRunId = result.check_runs[0].id as number;
-      }
-      else {
-        const workflowId = await this.getWorkflowId();
-
-        const response = await this.octokit.actions.listWorkflowRuns({
-          owner: this.owner,
-          repo: this.repo,
-          workflow_id: workflowId,
-          event: 'workflow_dispatch'
-        });
-
-        debug('List Workflow Runs', response);
-        const runs = response.data.workflow_runs
-            .filter((r: any) => new Date(r.created_at).setMilliseconds(0) >= this.triggerDate);
-        debug(`Filtered Workflow Runs (after trigger date: ${new Date(this.triggerDate).toISOString()})`, runs.map((r: any) => ({
-          id: r.id,
-          name: r.name,
-          created_at: r.creatd_at,
-          triggerDate: new Date(this.triggerDate).toISOString(),
-          created_at_ts: new Date(r.created_at).valueOf(),
-          triggerDateTs: this.triggerDate
-        })));
-
-        if (runs.length == 0) {
-          throw new Error('Run not found');
-        }
-
-        this.workflowRunId = runs[0].id as number;
+        this.workflowRunId = await this.findWorklowRunIdFromRunName(this.runName);
+      } else {
+        this.workflowRunId = await this.findWorkflowRunIdFromFirstRunOfSameWorkflowId();
       }
 
       return this.workflowRunId;
@@ -177,6 +138,51 @@ export class WorkflowHandler {
       throw error;
     }
 
+  }
+
+  private async findWorkflowRunIdFromFirstRunOfSameWorkflowId(): Promise<number> {
+    const workflowId = await this.getWorkflowId();
+
+    const response = await this.octokit.actions.listWorkflowRuns({
+      owner: this.owner,
+      repo: this.repo,
+      workflow_id: workflowId,
+      event: 'workflow_dispatch'
+    });
+
+    debug('List Workflow Runs', response);
+    const runs = response.data.workflow_runs
+      .filter((r: any) => new Date(r.created_at).setMilliseconds(0) >= this.triggerDate);
+    debug(`Filtered Workflow Runs (after trigger date: ${new Date(this.triggerDate).toISOString()})`, runs.map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      created_at: r.creatd_at,
+      triggerDate: new Date(this.triggerDate).toISOString(),
+      created_at_ts: new Date(r.created_at).valueOf(),
+      triggerDateTs: this.triggerDate
+    })));
+
+    if (runs.length == 0) {
+      throw new Error('Run not found');
+    }
+
+    return runs[0].id as number;
+  }
+
+  private async findWorklowRunIdFromRunName(runName: string): Promise<number> {
+    const result = await this.octokit.rest.checks.listForRef({
+      check_name: runName,
+      owner: this.owner,
+      repo: this.repo,
+      ref: this.ref,
+      filter: 'latest'
+    });
+
+    if (result.length == 0) {
+      throw new Error('Run not found');
+    }
+
+    return result.check_runs[0].id as number;
   }
 
   private async getWorkflowId(): Promise<number | string> {

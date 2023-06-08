@@ -8,7 +8,7 @@ enum TimeUnit {
 }
 
 function toMilliseconds(timeWithUnit: string): number {
-  const unitStr = timeWithUnit.substr(timeWithUnit.length-1);
+  const unitStr = timeWithUnit.substring(timeWithUnit.length-1);
   const unit = TimeUnit[unitStr.toUpperCase() as keyof typeof TimeUnit];
   if (!unit) {
     throw new Error('Unknown time unit '+unitStr);
@@ -17,6 +17,16 @@ function toMilliseconds(timeWithUnit: string): number {
   return time * unit;
 }
 
+function parse(inputsJson: string) {
+  if(inputsJson) {
+    try {
+      return JSON.parse(inputsJson);
+    } catch(e) {
+      throw new Error(`Failed to parse 'inputs' parameter. Muse be a valid JSON.\nCause: ${e}`)
+    }
+  }
+  return {}
+}
 export function getArgs() {
   // Required inputs
   const token = core.getInput('token');
@@ -28,11 +38,7 @@ export function getArgs() {
     : [github.context.repo.owner, github.context.repo.repo];
 
   // Decode inputs, this MUST be a valid JSON string
-  let inputs = {};
-  const inputsJson = core.getInput('inputs');
-  if(inputsJson) {
-    inputs = JSON.parse(inputsJson);
-  }
+  let inputs = parse(core.getInput('inputs'));
 
   const displayWorkflowUrlStr = core.getInput('display-workflow-run-url');
   const displayWorkflowUrl = displayWorkflowUrlStr && displayWorkflowUrlStr === 'true';

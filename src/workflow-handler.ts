@@ -180,11 +180,11 @@ export class WorkflowHandler {
       filter: 'latest'
     });
 
-    if (result.length == 0) {
+    if (!result.data.check_runs.length) {
       throw new Error('Run not found');
     }
 
-    return result.check_runs[0].id as number;
+    return result.data.check_runs[0].id as number;
   }
 
   private async getWorkflowId(): Promise<number | string> {

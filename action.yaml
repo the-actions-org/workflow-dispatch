@@ -2,10 +2,10 @@ name: 'Workflow Dispatch and wait'
 description: 'Trigger and chain GitHub Actions workflows with workflow_dispatch events and wait for result'
 
 inputs:
-  workflow: 
+  workflow:
     description: 'Name or ID of workflow to run'
     required: true
-  token: 
+  token:
     description: 'GitHub token with repo write access, can NOT use secrets.GITHUB_TOKEN, see readme'
     required: true
   inputs:
@@ -23,7 +23,7 @@ inputs:
   display-workflow-run-url:
     description: 'Get the URL of the triggered workflow and display it in logs (useful to follow the progress of the triggered workflow)'
     required: false
-    default: true
+    default: "true"
   display-workflow-run-url-interval:
     description: 'The time to wait (+unit) between two polls to get the URL of the workflow run'
     required: false
@@ -35,9 +35,9 @@ inputs:
   wait-for-completion:
     description: 'Block until the triggered workflow has finished'
     required: false
-    default: true
+    default: "true"
   wait-for-completion-timeout:
-    description: 'Maximum amount of time (+unit) to wait to mark workflow as timed out' 
+    description: 'Maximum amount of time (+unit) to wait to mark workflow as timed out'
     required: false
     default: 1h
   wait-for-completion-interval:
@@ -45,12 +45,12 @@ inputs:
     required: false
     default: 1m
   workflow-logs:
-    description: 'Indicate what to do with logs of the triggered workflow. `ignore` do not retrieve logs from tiggered workflow. `print` retrieves logs from triggered workflow and print in the workflow that triggered the other workflow.'
+    description: 'Indicate what to do with logs of the triggered workflow. "ignore" do not retrieve logs from tiggered workflow. "print" retrieves logs from triggered workflow and print in the workflow that triggered the other workflow.'
     required: false
     default: ignore
 
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/index.js'
 
 branding:

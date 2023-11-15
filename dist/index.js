@@ -10045,39 +10045,17 @@ class WorkflowHandler {
     getWorkflowRunStatus() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const runId = yield this.getWorkflowRunId();
-                const response = yield this.octokit.rest.actions.getWorkflowRun({
-                    owner: this.owner,
-                    repo: this.repo,
-                    run_id: runId
-                });
-                (0, debug_1.debug)('Workflow Run status', response);
-                return {
-                    url: response.data.html_url,
-                    status: ofStatus(response.data.status),
-                    conclusion: ofConclusion(response.data.conclusion)
-                };
-            }
-            catch (error) {
-                (0, debug_1.debug)('Workflow Run status error', error);
-                throw error;
-            }
-        });
-    }
-    getWorkflowRunArtifacts() {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
                 if (this.runName) {
                     return yield this.findWorklowRunFromRunName(this.runName);
                 }
                 else {
                     const runId = yield this.getWorkflowRunId();
-                    const response = yield this.octokit.rest.actions.getWorkflowRunArtifacts({
+                    const response = yield this.octokit.rest.actions.getWorkflowRun({
                         owner: this.owner,
                         repo: this.repo,
                         run_id: runId
                     });
-                    (0, debug_1.debug)('Workflow Run artifacts', response);
+                    (0, debug_1.debug)('Workflow Run status', response);
                     return {
                         url: response.data.html_url,
                         status: ofStatus(response.data.status),
@@ -10086,7 +10064,7 @@ class WorkflowHandler {
                 }
             }
             catch (error) {
-                (0, debug_1.debug)('Workflow Run artifacts error', error);
+                (0, debug_1.debug)('Workflow Run status error', error);
                 throw error;
             }
         });

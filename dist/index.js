@@ -10045,26 +10045,43 @@ class WorkflowHandler {
     getWorkflowRunStatus() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                if (this.runName) {
-                    return yield this.findWorklowRunFromRunName(this.runName);
-                }
-                else {
-                    const runId = yield this.getWorkflowRunId();
-                    const response = yield this.octokit.rest.actions.getWorkflowRun({
-                        owner: this.owner,
-                        repo: this.repo,
-                        run_id: runId
-                    });
-                    (0, debug_1.debug)('Workflow Run status', response);
-                    return {
-                        url: response.data.html_url,
-                        status: ofStatus(response.data.status),
-                        conclusion: ofConclusion(response.data.conclusion)
-                    };
-                }
+                const runId = yield this.getWorkflowRunId();
+                const response = yield this.octokit.rest.actions.getWorkflowRun({
+                    owner: this.owner,
+                    repo: this.repo,
+                    run_id: runId
+                });
+                (0, debug_1.debug)('Workflow Run status', response);
+                return {
+                    url: response.data.html_url,
+                    status: ofStatus(response.data.status),
+                    conclusion: ofConclusion(response.data.conclusion)
+                };
             }
             catch (error) {
                 (0, debug_1.debug)('Workflow Run status error', error);
+                throw error;
+            }
+        });
+    }
+    getWorkflowRunArtifacts() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const runId = yield this.getWorkflowRunId();
+                const response = yield this.octokit.rest.actions.getWorkflowRunArtifacts({
+                    owner: this.owner,
+                    repo: this.repo,
+                    run_id: runId
+                });
+                (0, debug_1.debug)('Workflow Run artifacts', response);
+                return {
+                    url: response.data.html_url,
+                    status: ofStatus(response.data.status),
+                    conclusion: ofConclusion(response.data.conclusion)
+                };
+            }
+            catch (error) {
+                (0, debug_1.debug)('Workflow Run artifacts error', error);
                 throw error;
             }
         });
@@ -10076,7 +10093,12 @@ class WorkflowHandler {
             }
             try {
                 core.debug('Get workflow run id');
-                this.workflowRunId = yield this.findWorkflowRunIdFromFirstRunOfSameWorkflowId();
+                if (this.runName) {
+                    this.workflowRunId = yield this.findWorklowRunIdFromRunName(this.runName);
+                }
+                else {
+                    this.workflowRunId = yield this.findWorkflowRunIdFromFirstRunOfSameWorkflowId();
+                }
                 return this.workflowRunId;
             }
             catch (error) {
@@ -10111,25 +10133,22 @@ class WorkflowHandler {
             return runs[0].id;
         });
     }
-    findWorklowRunFromRunName(runName) {
+    findWorklowRunIdFromRunName(runName) {
         return __awaiter(this, void 0, void 0, function* () {
-            const result = yield this.octokit.rest.checks.listForRef({
-                check_name: runName,
+            const workflowId = yield this.getWorkflowId();
+            const result = yield this.octokit.rest.actions.listWorkflowRuns({
                 owner: this.owner,
                 repo: this.repo,
-                ref: this.ref,
-                filter: 'latest'
+                workflow_id: workflowId,
+                branch: this.ref,
+                event: 'workflow_dispatch',
+                created: `>=${new Date(this.triggerDate).toISOString()}`
             });
-            const runs = result.data.check_runs
-                .filter((r) => new Date(r.started_at).setMilliseconds(0) >= this.triggerDate);
+            const runs = result.data.workflow_runs.filter((r) => r.name === runName);
             if (!runs.length) {
                 throw new Error('Run not found');
             }
-            return {
-                url: runs[0].html_url,
-                status: ofStatus(runs[0].status),
-                conclusion: ofConclusion(runs[0].conclusion)
-            };
+            return runs[0].id;
         });
     }
     getWorkflowId() {

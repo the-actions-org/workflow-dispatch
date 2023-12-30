@@ -10136,16 +10136,10 @@ class WorkflowHandler {
     findWorklowRunIdFromRunName(runName) {
         return __awaiter(this, void 0, void 0, function* () {
             const workflowId = yield this.getWorkflowId();
-            const branch = (yield this.octokit.rest.git.getRef({
-                owner: this.owner,
-                repo: this.repo,
-                ref: this.ref,
-            })).replace('refs/heads/', '');
             const result = yield this.octokit.rest.actions.listWorkflowRuns({
                 owner: this.owner,
                 repo: this.repo,
                 workflow_id: workflowId,
-                branch,
                 event: 'workflow_dispatch',
                 created: `>=${new Date(this.triggerDate).toISOString()}`
             });

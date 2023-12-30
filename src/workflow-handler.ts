@@ -172,17 +172,10 @@ export class WorkflowHandler {
   private async findWorklowRunIdFromRunName(runName: string): Promise<number> {
     const workflowId = await this.getWorkflowId();
 
-    const branch = (await this.octokit.rest.git.getRef({
-      owner: this.owner,
-      repo: this.repo,
-      ref: this.ref,
-    })).replace('refs/heads/', '');
-
     const result = await this.octokit.rest.actions.listWorkflowRuns({
       owner: this.owner,
       repo: this.repo,
       workflow_id: workflowId,
-      branch,
       event: 'workflow_dispatch',
       created: `>=${new Date(this.triggerDate).toISOString()}`
     });

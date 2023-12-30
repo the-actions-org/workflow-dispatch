@@ -172,7 +172,7 @@ export class WorkflowHandler {
   private async findWorklowRunIdFromRunName(runName: string): Promise<number> {
     const workflowId = await this.getWorkflowId();
 
-    const branch = (await this.octokit.git.getRef({
+    const branch = (await this.octokit.rest.git.getRef({
       owner: this.owner,
       repo: this.repo,
       ref: this.ref,

@@ -227,9 +227,11 @@ jobs:
     #     ref: master 
 
   deploy:
+    if: ${{ github.event_name != 'pull_request' }}
     needs:
       - echo-1-test
       - echo-2-test
+      - echo-3-test
       - long-running-test
       - failing-test
       - timeout-test
